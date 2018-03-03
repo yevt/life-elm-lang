@@ -1,13 +1,12 @@
 module Main exposing (..)
 
-import Debug exposing (..)
 import Html
 import Html.Attributes
 import Html.Events
-import Random
 import Time
 
 
+main : Program Never Model Msg
 main =
     Html.program
         { init = init
@@ -39,6 +38,7 @@ type alias Model =
 -- INITIAL FIELD
 
 
+initialField : List Int
 initialField =
     [ 0
     , 0
@@ -82,8 +82,8 @@ type Msg
     | Tick Time.Time
 
 
-updateCells : Int -> Int -> List Int -> List Int
-updateCells width height cells =
+evolve : Int -> Int -> List Int -> List Int
+evolve width height cells =
     let
         indexedCells =
             List.indexedMap
@@ -151,7 +151,7 @@ update msg model =
         Tick time ->
             ( { model
                 | tick = model.tick + 1
-                , cells = updateCells model.width model.height model.cells
+                , cells = evolve model.width model.height model.cells
               }
             , Cmd.none
             )
@@ -175,10 +175,12 @@ subscriptions model =
 -- VIEW
 
 
+cellWidthPx : Int
 cellWidthPx =
     25
 
 
+cellHeightPx : Int
 cellHeightPx =
     25
 
@@ -215,5 +217,5 @@ view model =
                 ]
             ]
             (List.map viewCell model.cells)
-        , Html.button [Html.Events.onClick StartSimulation] [Html.text "Start Simulation"]
+        , Html.button [ Html.Events.onClick StartSimulation ] [ Html.text "Start Simulation" ]
         ]
