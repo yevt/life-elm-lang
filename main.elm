@@ -73,6 +73,31 @@ init =
     ( Model Setup 5 5 initialField 0, Cmd.none )
 
 
+cellsFieldFromList : Int -> Int -> List ( Int, Int ) -> List Int
+cellsFieldFromList w h coordsList =
+    let
+        cells =
+            List.repeat (w * h) 0
+
+        createCell index _ =
+            let
+                x =
+                    index % w
+
+                y =
+                    index // w
+
+                inCoordList ( xx, yy ) =
+                    xx == x && yy == y
+            in
+            if List.any inCoordList coordsList then
+                1
+            else
+                0
+    in
+    List.indexedMap createCell cells
+
+
 
 -- UPDATE
 
@@ -80,6 +105,8 @@ init =
 type Msg
     = StartSimulation
     | Tick Time.Time
+    | SetFieldWidth String
+    | SetFieldHeight String
 
 
 evolve : Int -> Int -> List Int -> List Int
@@ -156,6 +183,30 @@ update msg model =
             , Cmd.none
             )
 
+        SetFieldWidth value ->
+            let
+                width =
+                    Result.withDefault 0 (String.toInt value)
+            in
+            ( { model
+                | width = width
+                , cells = List.repeat (width * model.height) 0
+              }
+            , Cmd.none
+            )
+
+        SetFieldHeight value ->
+            let
+                height =
+                    Result.withDefault 0 (String.toInt value)
+            in
+            ( { model
+                | height = height
+                , cells = List.repeat (height * model.width) 0
+              }
+            , Cmd.none
+            )
+
 
 
 -- SUBSCRIPTIONS
@@ -209,7 +260,17 @@ viewCell n =
 view : Model -> Html.Html Msg
 view model =
     Html.div []
-        [ Html.div
+        [ Html.input
+            [ Html.Attributes.value (toString model.width)
+            , Html.Events.onInput SetFieldWidth
+            ]
+            []
+        , Html.input
+            [ Html.Attributes.value (toString model.height)
+            , Html.Events.onInput SetFieldHeight
+            ]
+            []
+        , Html.div
             [ Html.Attributes.style
                 [ ( "display", "flex" )
                 , ( "flex-wrap", "wrap" )
