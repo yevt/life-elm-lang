@@ -1,8 +1,8 @@
 module Main exposing (..)
 
-import Html
-import Html.Attributes
-import Html.Events
+import Html exposing (Html, button, div, input, text)
+import Html.Attributes exposing (class, style, value)
+import Html.Events exposing (onClick, onInput)
 import Time
 
 
@@ -210,7 +210,7 @@ cellHeightPx =
     25
 
 
-viewCell : Int -> Html.Html Msg
+viewCell : Int -> Html Msg
 viewCell n =
     let
         color =
@@ -221,14 +221,14 @@ viewCell n =
                 _ ->
                     "grey"
 
-        style =
-            Html.Attributes.style
+        greenBox =
+            style
                 [ ( "backgroundColor", color )
                 , ( "width", toString cellWidthPx ++ "px" )
                 , ( "height", toString cellHeightPx ++ "px" )
                 ]
     in
-    Html.div [ style ] []
+    Html.div [ greenBox ] []
 
 
 transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
@@ -236,39 +236,39 @@ transformIntMsgToStringMsg intMsg =
     \value -> intMsg (Result.withDefault 0 (String.toInt value))
 
 
-style : Html.Html Msg
-style =
+stylesheet : Html Msg
+stylesheet =
     Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "style.css" ] []
 
 
-view : Model -> Html.Html Msg
+view : Model -> Html Msg
 view model =
     Html.div []
-        [ style
-        , Html.div [ Html.Attributes.class "world-size-setup" ]
-            [ Html.input
-                [ Html.Attributes.class "world-width"
-                , Html.Attributes.value (toString model.width)
-                , Html.Events.onInput (transformIntMsgToStringMsg SetFieldWidth)
+        [ stylesheet
+        , div [ class "world-size-setup" ]
+            [ input
+                [ class "world-width"
+                , value (toString model.width)
+                , onInput (transformIntMsgToStringMsg SetFieldWidth)
                 ]
                 []
-            , Html.input
-                [ Html.Attributes.class "world-heigth"
-                , Html.Attributes.value (toString model.height)
-                , Html.Events.onInput (transformIntMsgToStringMsg SetFieldHeight)
+            , input
+                [ class "world-heigth"
+                , value (toString model.height)
+                , onInput (transformIntMsgToStringMsg SetFieldHeight)
                 ]
                 []
             ]
-        , Html.div
-            [ Html.Attributes.class "field-setup"
-            , Html.Attributes.style
+        , div
+            [ class "field-setup"
+            , style
                 [ ( "display", "flex" )
                 , ( "flex-wrap", "wrap" )
                 , ( "width", toString (cellWidthPx * model.width) ++ "px" )
                 ]
             ]
             (List.map viewCell model.cells)
-        , Html.div [ Html.Attributes.class "controls" ]
-            [ Html.button [ Html.Events.onClick StartSimulation ] [ Html.text "Start Simulation" ]
+        , div [ class "controls" ]
+            [ button [ onClick StartSimulation ] [ text "Start Simulation" ]
             ]
         ]
