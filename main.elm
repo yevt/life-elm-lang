@@ -38,39 +38,21 @@ type alias Model =
 -- INITIAL FIELD
 
 
-initialField : List Int
-initialField =
-    [ 0
-    , 0
-    , 0
-    , 0
-    , 0
-    , 0
-    , 1
-    , 1
-    , 1
-    , 0
-    , 0
-    , 1
-    , 0
-    , 0
-    , 0
-    , 0
-    , 0
-    , 1
-    , 0
-    , 0
-    , 0
-    , 0
-    , 0
-    , 0
-    , 0
-    ]
+initialAliveCells : List ( Int, Int )
+initialAliveCells =
+    [ ( 1, 1 ), ( 2, 2 ), ( 1, 2 ) ]
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model Setup 5 5 initialField 0, Cmd.none )
+    let
+        worldWidth =
+            5
+
+        worldHeight =
+            5
+    in
+    ( Model Setup worldWidth worldHeight (cellsFieldFromList worldWidth worldHeight initialAliveCells) 0, Cmd.none )
 
 
 cellsFieldFromList : Int -> Int -> List ( Int, Int ) -> List Int
@@ -105,8 +87,8 @@ cellsFieldFromList w h coordsList =
 type Msg
     = StartSimulation
     | Tick Time.Time
-    | SetFieldWidth String
-    | SetFieldHeight String
+    | SetFieldWidth Int
+    | SetFieldHeight Int
 
 
 evolve : Int -> Int -> List Int -> List Int
@@ -183,26 +165,18 @@ update msg model =
             , Cmd.none
             )
 
-        SetFieldWidth value ->
-            let
-                width =
-                    Result.withDefault 0 (String.toInt value)
-            in
+        SetFieldWidth width ->
             ( { model
                 | width = width
-                , cells = List.repeat (width * model.height) 0
+                , cells = cellsFieldFromList width model.height initialAliveCells
               }
             , Cmd.none
             )
 
-        SetFieldHeight value ->
-            let
-                height =
-                    Result.withDefault 0 (String.toInt value)
-            in
+        SetFieldHeight height ->
             ( { model
                 | height = height
-                , cells = List.repeat (height * model.width) 0
+                , cells = cellsFieldFromList model.width height initialAliveCells
               }
             , Cmd.none
             )
@@ -257,26 +231,44 @@ viewCell n =
     Html.div [ style ] []
 
 
+transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
+transformIntMsgToStringMsg intMsg =
+    \value -> intMsg (Result.withDefault 0 (String.toInt value))
+
+
+style : Html.Html Msg
+style =
+    Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "style.css" ] []
+
+
 view : Model -> Html.Html Msg
 view model =
     Html.div []
-        [ Html.input
-            [ Html.Attributes.value (toString model.width)
-            , Html.Events.onInput SetFieldWidth
+        [ style
+        , Html.div [ Html.Attributes.class "world-size-setup" ]
+            [ Html.input
+                [ Html.Attributes.class "world-width"
+                , Html.Attributes.value (toString model.width)
+                , Html.Events.onInput (transformIntMsgToStringMsg SetFieldWidth)
+                ]
+                []
+            , Html.input
+                [ Html.Attributes.class "world-heigth"
+                , Html.Attributes.value (toString model.height)
+                , Html.Events.onInput (transformIntMsgToStringMsg SetFieldHeight)
+                ]
+                []
             ]
-            []
-        , Html.input
-            [ Html.Attributes.value (toString model.height)
-            , Html.Events.onInput SetFieldHeight
-            ]
-            []
         , Html.div
-            [ Html.Attributes.style
+            [ Html.Attributes.class "field-setup"
+            , Html.Attributes.style
                 [ ( "display", "flex" )
                 , ( "flex-wrap", "wrap" )
                 , ( "width", toString (cellWidthPx * model.width) ++ "px" )
                 ]
             ]
             (List.map viewCell model.cells)
-        , Html.button [ Html.Events.onClick StartSimulation ] [ Html.text "Start Simulation" ]
+        , Html.div [ Html.Attributes.class "controls" ]
+            [ Html.button [ Html.Events.onClick StartSimulation ] [ Html.text "Start Simulation" ]
+            ]
         ]
