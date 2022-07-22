@@ -219,6 +219,8 @@ update msg model =
         ScreenSize (w, h) -> ( { model 
                 | screenWidth = w
                 , screenHeight = h
+                , worldWidth = div w model.screenWidth
+                , worldHeight = div h model.screenHeight
             }
         , Cmd.none 
         )
