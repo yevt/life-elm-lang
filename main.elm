@@ -56,16 +56,17 @@ init =
         worldHeight =
             20
     in
-        -- ( Model Setup worldWidth worldHeight (cellsFieldFromList worldWidth worldHeight initialAliveCells) 0 1000 500 500, Cmd.none )
         (
             { mode = Setup
-            , worldWidth = worldWidth
+            , worldWidth = worldWidth -- cells
             , worldHeight = worldHeight
             , cells = cellsFieldFromList worldWidth worldHeight initialAliveCells
             , tick = 0 -- iteration counter
             , tickDuration = 1000 -- ms
-            , screenWidth = 500
-            , screenHeight = 500 
+            , screenWidth = 500 -- px
+            , screenHeight = 50
+            , cellWidth = 25
+            , cellHeight =
             }
             , Cmd.none
         )
@@ -245,17 +246,6 @@ subscriptions model =
 
 -- VIEW
 
-
-cellWidthPx : Int
-cellWidthPx =
-    25
-
-
-cellHeightPx : Int
-cellHeightPx =
-    25
-
-
 viewCell : Int -> Int -> Html Msg
 viewCell index value =
     let
@@ -271,8 +261,8 @@ viewCell index value =
     Html.div [ 
         style
             [ ( "backgroundColor", color )
-            , ( "width", toString cellWidthPx ++ "px" )
-            , ( "height", toString cellHeightPx ++ "px" )
+            , ( "width", toString model.cellWidth ++ "px" )
+            , ( "height", toString model.cellHeight ++ "px" )
             ]
         , onClick ( ToggleCell index )
     ] []
@@ -329,7 +319,7 @@ view model =
             , style
                 [ ( "display", "flex" )
                 , ( "flex-wrap", "wrap" )
-                , ( "width", toString (cellWidthPx * model.worldWidth) ++ "px" )
+                , ( "width", toString (model.cellWidth * model.cellHeight) ++ "px" )
                 ]
             ]
             (List.indexedMap viewCell model.cells)
