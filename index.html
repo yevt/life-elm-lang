@@ -3,13 +3,20 @@
   <meta charset="UTF-8">
   <title>Main</title>
   <script src="life.js"></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
   <div id="myapp"></div>
   <script>
   var app = Elm.Main.embed(document.getElementById('myapp'));
-  app.ports.screenSize.send(200, 200)
+  setTimeout(function() {
+    var worldElement = document.getElementById('world');
+    var ww = worldElement.clientWidth;
+    var wh = worldElement.clientHeight;
+    app.ports.screenSize.send([ww, wh])
+
+  })
   </script>
 </body>
 </html>

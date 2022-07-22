@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Html exposing (Html, button, div, input, text, label)
-import Html.Attributes exposing (class, style, value)
+import Html.Attributes exposing (class, style, value, id)
 import Html.Events exposing (onClick, onInput)
 import Time
 import Ports exposing (..)
@@ -35,6 +35,8 @@ type alias Model =
     , tickDuration: Float -- ms
     , screenWidth: Int
     , screenHeight: Int
+    , cellWidth: Int
+    , cellHeight: Int
     }
 
 
@@ -51,22 +53,22 @@ init : ( Model, Cmd Msg )
 init =
     let
         worldWidth =
-            20
+            0
 
         worldHeight =
-            20
+            0
     in
         (
             { mode = Setup
-            , worldWidth = worldWidth -- cells
-            , worldHeight = worldHeight
-            , cells = cellsFieldFromList worldWidth worldHeight initialAliveCells
+            , worldWidth = 0 -- cells
+            , worldHeight = 0
+            , cells = []
             , tick = 0 -- iteration counter
             , tickDuration = 1000 -- ms
             , screenWidth = 500 -- px
             , screenHeight = 50
             , cellWidth = 25
-            , cellHeight =
+            , cellHeight = 25
             }
             , Cmd.none
         )
@@ -219,11 +221,15 @@ update msg model =
         ScreenSize (w, h) -> ( { model 
                 | screenWidth = w
                 , screenHeight = h
-                , worldWidth = div w model.screenWidth
-                , worldHeight = div h model.screenHeight
+                , worldWidth = w // model.cellWidth
+                , worldHeight = h // model.cellHeight
+                , cells = List.repeat ((w // model.cellWidth) * (h // model.cellHeight)) 0
             }
         , Cmd.none 
         )
+        
+        -- ScreenSize (w, h) -> ( model, Cmd.none )
+        
 
 
 
@@ -248,8 +254,8 @@ subscriptions model =
 
 -- VIEW
 
-viewCell : Int -> Int -> Html Msg
-viewCell index value =
+viewCell : Int -> Int -> Model -> Html Msg
+viewCell index value model =
     let
         color =
             case value of
@@ -289,7 +295,7 @@ view : Model -> Html Msg
 view model =
     Html.div []
         [ stylesheet
-        , div [ class "world-size-setup" ]
+        , div [ class "settings" ]
             [ 
             label [] [text "World Width (cells): "] 
             , input
@@ -317,12 +323,11 @@ view model =
                 ]
             ]
         , div
-            [ class "field-setup"
-            , style
-                [ ( "display", "flex" )
-                , ( "flex-wrap", "wrap" )
-                , ( "width", toString (model.cellWidth * model.cellHeight) ++ "px" )
-                ]
+            [ class "world"
+            , id "world"
+            -- , style
+            --     [ ( "width", toString (model.screenWidth) ++ "px" )
+            --     ]
             ]
-            (List.indexedMap viewCell model.cells)
+            (List.indexedMap (\i v -> viewCell i v model) model.cells) 
         ]
