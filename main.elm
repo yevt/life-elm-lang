@@ -1,9 +1,10 @@
 module Main exposing (..)
 
-import Html exposing (Html, button, div, input, text)
+import Html exposing (Html, button, div, input, text, label)
 import Html.Attributes exposing (class, style, value)
 import Html.Events exposing (onClick, onInput)
 import Time
+import Ports exposing (..)
 
 
 main : Program Never Model Msg
@@ -27,10 +28,13 @@ type Mode
 
 type alias Model =
     { mode : Mode
-    , width : Int
-    , height : Int
+    , worldWidth : Int
+    , worldHeight : Int
     , cells : List Int
-    , tick : Int
+    , tick : Int -- iteration counter
+    , tickDuration: Float -- ms
+    , screenWidth: Int
+    , screenHeight: Int
     }
 
 
@@ -47,12 +51,24 @@ init : ( Model, Cmd Msg )
 init =
     let
         worldWidth =
-            5
+            20
 
         worldHeight =
-            5
+            20
     in
-    ( Model Setup worldWidth worldHeight (cellsFieldFromList worldWidth worldHeight initialAliveCells) 0, Cmd.none )
+        -- ( Model Setup worldWidth worldHeight (cellsFieldFromList worldWidth worldHeight initialAliveCells) 0 1000 500 500, Cmd.none )
+        (
+            { mode = Setup
+            , worldWidth = worldWidth
+            , worldHeight = worldHeight
+            , cells = cellsFieldFromList worldWidth worldHeight initialAliveCells
+            , tick = 0 -- iteration counter
+            , tickDuration = 1000 -- ms
+            , screenWidth = 500
+            , screenHeight = 500 
+            }
+            , Cmd.none
+        )
 
 
 cellsFieldFromList : Int -> Int -> List ( Int, Int ) -> List Int
@@ -89,6 +105,9 @@ type Msg
     | Tick Time.Time
     | SetFieldWidth Int
     | SetFieldHeight Int
+    | SetTickDuration Float
+    | ToggleCell Int
+    | ScreenSize (Int, Int)
 
 
 evolve : Int -> Int -> List Int -> List Int
@@ -160,26 +179,49 @@ update msg model =
         Tick time ->
             ( { model
                 | tick = model.tick + 1
-                , cells = evolve model.width model.height model.cells
+                , cells = evolve model.worldWidth model.worldHeight model.cells
               }
             , Cmd.none
             )
 
         SetFieldWidth width ->
             ( { model
-                | width = width
-                , cells = cellsFieldFromList width model.height initialAliveCells
+                | worldWidth = width
+                , cells = cellsFieldFromList width model.worldHeight initialAliveCells
               }
             , Cmd.none
             )
 
         SetFieldHeight height ->
             ( { model
-                | height = height
-                , cells = cellsFieldFromList model.width height initialAliveCells
+                | worldHeight = height
+                , cells = cellsFieldFromList model.worldWidth height initialAliveCells
               }
             , Cmd.none
             )
+
+        ToggleCell index ->
+            ( { model | cells = List.indexedMap (\i v -> 
+                if i == index then
+                    if v == 1 then 0 else 1
+                else
+                    v
+              ) model.cells }
+            , Cmd.none
+            )
+
+        SetTickDuration duration ->
+            ( { model | tickDuration = duration}
+            , Cmd.none
+            )        
+
+        ScreenSize (w, h) -> ( { model 
+                | screenWidth = w
+                , screenHeight = h
+            }
+        , Cmd.none 
+        )
+
 
 
 
@@ -188,12 +230,16 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    case model.mode of
-        Simulation ->
-            Time.every Time.second Tick
+    Sub.batch [
+        case model.mode of
+            Simulation ->
+                Time.every model.tickDuration Tick
 
-        Setup ->
-            Sub.none
+            Setup ->
+                Sub.none
+
+        , screenSize ScreenSize
+    ]
 
 
 
@@ -210,30 +256,36 @@ cellHeightPx =
     25
 
 
-viewCell : Int -> Html Msg
-viewCell n =
+viewCell : Int -> Int -> Html Msg
+viewCell index value =
     let
         color =
-            case n of
+            case value of
                 1 ->
                     "green"
 
                 _ ->
                     "grey"
-
-        greenBox =
-            style
-                [ ( "backgroundColor", color )
-                , ( "width", toString cellWidthPx ++ "px" )
-                , ( "height", toString cellHeightPx ++ "px" )
-                ]
+            
     in
-    Html.div [ greenBox ] []
+    Html.div [ 
+        style
+            [ ( "backgroundColor", color )
+            , ( "width", toString cellWidthPx ++ "px" )
+            , ( "height", toString cellHeightPx ++ "px" )
+            ]
+        , onClick ( ToggleCell index )
+    ] []
 
 
 transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
 transformIntMsgToStringMsg intMsg =
     \value -> intMsg (Result.withDefault 0 (String.toInt value))
+
+transformFloatMsgToStringMsg : (Float -> Msg) -> (String -> Msg)
+transformFloatMsgToStringMsg floatMsg =
+    \string -> floatMsg (Result.withDefault 0 (String.toFloat string))
+
 
 
 stylesheet : Html Msg
@@ -246,29 +298,39 @@ view model =
     Html.div []
         [ stylesheet
         , div [ class "world-size-setup" ]
-            [ input
+            [ 
+            label [] [text "World Width (cells): "] 
+            , input
                 [ class "world-width"
-                , value (toString model.width)
+                , value (toString model.worldWidth)
                 , onInput (transformIntMsgToStringMsg SetFieldWidth)
                 ]
                 []
+            , label [] [text "World Heigth (px): "] 
             , input
                 [ class "world-heigth"
-                , value (toString model.height)
+                , value (toString model.worldHeight)
                 , onInput (transformIntMsgToStringMsg SetFieldHeight)
                 ]
                 []
+            , label [] [text "Tick duration (ms): "] 
+            , input
+                [ class "tick-duration"
+                , value (toString model.tickDuration)
+                , onInput (transformFloatMsgToStringMsg SetTickDuration)
+                ]
+                []
+            , div [ class "controls" ]
+                [ button [ onClick StartSimulation ] [ text "Start Simulation" ]
+                ]
             ]
         , div
             [ class "field-setup"
             , style
                 [ ( "display", "flex" )
                 , ( "flex-wrap", "wrap" )
-                , ( "width", toString (cellWidthPx * model.width) ++ "px" )
+                , ( "width", toString (cellWidthPx * model.worldWidth) ++ "px" )
                 ]
             ]
-            (List.map viewCell model.cells)
-        , div [ class "controls" ]
-            [ button [ onClick StartSimulation ] [ text "Start Simulation" ]
-            ]
+            (List.indexedMap viewCell model.cells)
         ]
