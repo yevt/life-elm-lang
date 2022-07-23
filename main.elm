@@ -226,9 +226,9 @@ update msg model =
                 ( { model 
                         | screenWidth = w
                         , screenHeight = h
-                        , worldWidth = (w // model.cellWidth) + 1
-                        , worldHeight = (h // model.cellHeight) + 1
-                        , cells = List.repeat ((w // model.cellWidth) * (h // model.cellHeight)) 0
+                        , worldWidth = ww
+                        , worldHeight = wh
+                        , cells = List.repeat (ww * wh) 0
                     }
                 , Cmd.none 
                 )
