@@ -307,7 +307,7 @@ view model =
         [ stylesheet
         , div [ class "settings", id "settings"]
             [
-            label [] [text "Tick duration (ms): "] 
+            label [] [text "Tick (ms): "] 
             , input
                 [ class "tick-duration"
                 , value (toString model.tickDuration)
