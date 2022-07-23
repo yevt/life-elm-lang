@@ -65,8 +65,8 @@ init =
             , cells = []
             , tick = 0 -- iteration counter
             , tickDuration = 1000 -- ms
-            , screenWidth = 500 -- px
-            , screenHeight = 50
+            , screenWidth = 0 -- px
+            , screenHeight = 0
             , cellWidth = 25
             , cellHeight = 25
             }
@@ -220,12 +220,12 @@ update msg model =
 
         ScreenSize (w, h) -> 
             let 
-                ww = ceiling (w / model.cellWidth)
-                wh = ceiling (h / model.cellHeight)
+                ww = w // model.cellWidth + 1
+                wh = h // model.cellHeight + 1
             in
                 ( { model 
-                        | screenWidth = w
-                        , screenHeight = h
+                        | screenWidth = ww * model.cellWidth
+                        , screenHeight = wh * model.cellHeight
                         , worldWidth = ww
                         , worldHeight = wh
                         , cells = List.repeat (ww * wh) 0
@@ -295,12 +295,17 @@ stylesheet : Html Msg
 stylesheet =
     Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "style.css" ] []
 
+worldStyle model =
+    style
+        [ ( "width", toString (model.screenWidth) ++ "px" )
+        ]
+
 
 view : Model -> Html Msg
 view model =
     Html.div []
         [ stylesheet
-        , div [ class "settings" ]
+        , div [ class "settings", id "settings"]
             [ 
             label [] [text "World Width (cells): "] 
             , input
@@ -330,9 +335,7 @@ view model =
         , div
             [ class "world"
             , id "world"
-            -- , style
-            --     [ ( "width", toString (model.screenWidth) ++ "px" )
-            --     ]
+            , worldStyle model
             ]
             (List.indexedMap (\i v -> viewCell i v model) model.cells) 
         ]

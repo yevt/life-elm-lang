@@ -11,9 +11,9 @@
   <script>
   var app = Elm.Main.embed(document.getElementById('myapp'));
   setTimeout(function() {
-    var worldElement = document.getElementById('world');
-    var ww = worldElement.clientWidth;
-    var wh = worldElement.clientHeight;
+    var settingsElement = document.getElementById('settings');
+    var ww = document.body.clientWidth;
+    var wh = document.body.clientHeight - settingsElement.clientHeight;
     app.ports.screenSize.send([ww, wh])
 
   })
