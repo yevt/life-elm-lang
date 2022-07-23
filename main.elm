@@ -223,7 +223,7 @@ update msg model =
                 , screenHeight = h
                 , worldWidth = w // model.cellWidth + 1
                 , worldHeight = h // model.cellHeight + 1 
-                , cells = List.repeat ((w // model.cellWidth) * (h // model.cellHeight)) 0
+                , cells = List.repeat ((w // model.cellWidth + 1) * (h // model.cellHeight + 1)) 0
             }
         , Cmd.none 
         )
