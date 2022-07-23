@@ -220,8 +220,8 @@ update msg model =
 
         ScreenSize (w, h) -> 
             let 
-                ww = (w // model.cellWidth) + 1
-                wh = (h // model.cellHeight) + 1
+                ww = ceiling (w / model.cellWidth)
+                wh = ceiling (h / model.cellHeight)
             in
                 ( { model 
                         | screenWidth = w
