@@ -1,10 +1,12 @@
+# Conway's Life implemented in Elm
+
 [Rules](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Rules)
 
 
 Precompiled version included in `./build` folder. To launch open `./build/index.html` in your browser. 
 
 
-### How to run locally
+### How to run
 
 #### Install elm-0.18
 elm >= 0.19 won't compile
