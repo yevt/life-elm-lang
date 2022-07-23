@@ -221,8 +221,8 @@ update msg model =
         ScreenSize (w, h) -> ( { model 
                 | screenWidth = w
                 , screenHeight = h
-                , worldWidth = w // model.cellWidth
-                , worldHeight = h // model.cellHeight
+                , worldWidth = w // model.cellWidth + 1
+                , worldHeight = h // model.cellHeight + 1 
                 , cells = List.repeat ((w // model.cellWidth) * (h // model.cellHeight)) 0
             }
         , Cmd.none 
