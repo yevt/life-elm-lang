@@ -306,22 +306,8 @@ view model =
     Html.div []
         [ stylesheet
         , div [ class "settings", id "settings"]
-            [ 
-            label [] [text "World Width (cells): "] 
-            , input
-                [ class "world-width"
-                , value (toString model.worldWidth)
-                , onInput (transformIntMsgToStringMsg SetFieldWidth)
-                ]
-                []
-            , label [] [text "World Heigth (px): "] 
-            , input
-                [ class "world-heigth"
-                , value (toString model.worldHeight)
-                , onInput (transformIntMsgToStringMsg SetFieldHeight)
-                ]
-                []
-            , label [] [text "Tick duration (ms): "] 
+            [
+            label [] [text "Tick duration (ms): "] 
             , input
                 [ class "tick-duration"
                 , value (toString model.tickDuration)
