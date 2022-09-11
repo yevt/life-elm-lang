@@ -33,7 +33,7 @@ type alias Model =
     , worldHeight : Int
     , cells : List Int
     , tick : Int -- iteration counter
-    , tickDuration: Float -- ms
+    , tickDuration: Int -- ms
     , screenWidth: Int
     , screenHeight: Int
     , cellWidth: Int
@@ -109,7 +109,7 @@ type Msg
     | Tick Time.Posix
     | SetFieldWidth Int
     | SetFieldHeight Int
-    | SetTickDuration Float
+    | SetTickDuration Int
     | ToggleCell Int
     | ScreenSize (Int, Int)
 
@@ -249,7 +249,7 @@ subscriptions model =
     Sub.batch [
         case model.mode of
             Simulation ->
-                Time.every model.tickDuration Tick
+                Time.every (toFloat model.tickDuration) Tick
 
             Setup ->
                 Sub.none
@@ -287,9 +287,9 @@ transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
 transformIntMsgToStringMsg intMsg =
     \value -> intMsg (Result.withDefault 0 (String.toInt value))
 
-transformFloatMsgToStringMsg : (Float -> Msg) -> (String -> Msg)
-transformFloatMsgToStringMsg floatMsg =
-    \string -> floatMsg (Result.withDefault 0 (String.toFloat string))
+-- transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
+-- transformIntMsgToStringMsg floatMsg =
+--     \string -> floatMsg (Result.withDefault 0 (String.toFloat string))
 
 
 
@@ -298,9 +298,7 @@ stylesheet =
     Html.node "link" [ Html.Attributes.rel "stylesheet", Html.Attributes.href "style.css" ] []
 
 worldStyle model =
-    style
-        [ ( "width", String.fromInt (model.screenWidth) ++ "px" )
-        ]
+    style "width" ((String.fromInt model.screenWidth) ++ "px")
 
 
 view : Model -> Html Msg
@@ -313,7 +311,7 @@ view model =
             , input
                 [ class "tick-duration"
                 , value (String.fromInt model.tickDuration)
-                , onInput (transformFloatMsgToStringMsg SetTickDuration)
+                , onInput (transformIntMsgToStringMsg SetTickDuration)
                 ]
                 []
             , div [ class "controls" ]
