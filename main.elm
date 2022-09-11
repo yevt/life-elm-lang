@@ -105,7 +105,7 @@ cellsFieldFromList w h coordsList =
 
 type Msg
     = StartSimulation
-    | Tick Time.Time
+    | Tick Time.Posix
     | SetFieldWidth Int
     | SetFieldHeight Int
     | SetTickDuration Float
@@ -274,8 +274,8 @@ viewCell index value model =
     Html.div [ 
         style
             [ ( "backgroundColor", color )
-            , ( "width", toString model.cellWidth ++ "px" )
-            , ( "height", toString model.cellHeight ++ "px" )
+            , ( "width", String.fromInt model.cellWidth ++ "px" )
+            , ( "height", String.fromInt model.cellHeight ++ "px" )
             ]
         , onClick ( ToggleCell index )
     ] []
@@ -297,7 +297,7 @@ stylesheet =
 
 worldStyle model =
     style
-        [ ( "width", toString (model.screenWidth) ++ "px" )
+        [ ( "width", String.fromInt (model.screenWidth) ++ "px" )
         ]
 
 
@@ -310,7 +310,7 @@ view model =
             label [] [text "Tick (ms): "] 
             , input
                 [ class "tick-duration"
-                , value (toString model.tickDuration)
+                , value (String.fromInt model.tickDuration)
                 , onInput (transformFloatMsgToStringMsg SetTickDuration)
                 ]
                 []
