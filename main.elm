@@ -5,11 +5,12 @@ import Html.Attributes exposing (class, style, value, id)
 import Html.Events exposing (onClick, onInput)
 import Time
 import Ports exposing (..)
+import Browser
 
 
 main : Program Never Model Msg
 main =
-    Html.program
+    Browser.element
         { init = init
         , view = view
         , update = update
@@ -49,8 +50,8 @@ initialAliveCells =
     [ ( 1, 1 ), ( 2, 2 ), ( 1, 2 ) ]
 
 
-init : ( Model, Cmd Msg )
-init =
+init : flags -> ( Model, Cmd Msg )
+init flags =
     let
         worldWidth =
             0
@@ -83,7 +84,7 @@ cellsFieldFromList w h coordsList =
         createCell index _ =
             let
                 x =
-                    index % w
+                    remainderBy w index
 
                 y =
                     index // w
@@ -119,7 +120,8 @@ evolve width height cells =
         indexedCells =
             List.indexedMap
                 (\index cell ->
-                    { x = index % width
+                    -- { x = index % width
+                    { x = remainderBy width index
                     , y = index // width
                     , content = cell
                     }
