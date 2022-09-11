@@ -1,0 +1,16 @@
+INFO: Found elm at node_modules\.bin\elm.CMD
+INFO: Found elm 0.19.1
+INFO: Found elm-format at node_modules\.bin\elm-format.CMD
+INFO: Found elm-format 0.8.5
+INFO: Cleaning ./elm-stuff before upgrading
+INFO: Converting elm-package.json -> elm.json
+INFO: Detected an application project (this project has no exposed modules)
+INFO: Switching from elm-lang/core (deprecated) to elm/core
+INFO: Installing latest version of elm/core
+WARNING: Failed to upgrade elm/core!
+INFO: Detected use of elm-lang/core#Time; installing elm/time
+WARNING: Failed to upgrade elm/time!
+INFO: Switching from elm-lang/html (deprecated) to elm/html
+INFO: Installing latest version of elm/html
+WARNING: Failed to upgrade elm/html!
+INFO: Upgrading *.elm files in ./
