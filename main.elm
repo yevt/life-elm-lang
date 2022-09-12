@@ -6,9 +6,10 @@ import Html.Events exposing (onClick, onInput)
 import Time
 import Ports exposing (..)
 import Browser
+import Debug exposing (toString)
 
 
-main : Program Never Model Msg
+main : Program String Model Msg
 main =
     Browser.element
         { init = init
@@ -109,7 +110,7 @@ type Msg
     | Tick Time.Posix
     | SetFieldWidth Int
     | SetFieldHeight Int
-    | SetTickDuration Int
+    | SetTickDuration String
     | ToggleCell Int
     | ScreenSize (Int, Int)
 
@@ -216,9 +217,17 @@ update msg model =
             )
 
         SetTickDuration duration ->
-            ( { model | tickDuration = duration}
-            , Cmd.none
-            )        
+            let 
+                parsedTickDuration =
+                    case String.toInt duration of
+                        Nothing -> 
+                            200
+                        Just d ->
+                            d
+            in
+                ( { model | tickDuration = parsedTickDuration}
+                , Cmd.none
+                )        
 
         ScreenSize (w, h) -> 
             let 
@@ -274,18 +283,21 @@ viewCell index value model =
             
     in
     Html.div [ 
-        style
-            [ ( "backgroundColor", color )
-            , ( "width", String.fromInt model.cellWidth ++ "px" )
-            , ( "height", String.fromInt model.cellHeight ++ "px" )
-            ]
+        style "backgroundColor" color,
+        style "width" (toString model.cellWidth ++ "px"),
+        style "height" (toString model.cellHeight ++ "px")
+        -- style
+        --     [ ( "backgroundColor", color )
+        --     , ( "width", String.fromInt model.cellWidth ++ "px" )
+        --     , ( "height", String.fromInt model.cellHeight ++ "px" )
+        --     ]
         , onClick ( ToggleCell index )
     ] []
 
 
-transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
-transformIntMsgToStringMsg intMsg =
-    \value -> intMsg (Result.withDefault 0 (String.toInt value))
+-- transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
+-- transformIntMsgToStringMsg intMsg =
+--     \value -> intMsg (Result.withDefault 0 (String.toInt value))
 
 -- transformIntMsgToStringMsg : (Int -> Msg) -> (String -> Msg)
 -- transformIntMsgToStringMsg floatMsg =
@@ -311,7 +323,7 @@ view model =
             , input
                 [ class "tick-duration"
                 , value (String.fromInt model.tickDuration)
-                , onInput (transformIntMsgToStringMsg SetTickDuration)
+                , onInput SetTickDuration
                 ]
                 []
             , div [ class "controls" ]
